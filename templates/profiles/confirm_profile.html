@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm profile{% endblock %}
+
+{% block content %}
+<h1>Confirm candidate profile</h1>
+<p class="muted">Only confirm information that is true and explicitly supported by your resume or direct input.</p>
+<form method="post" class="panel">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Confirm profile</button>
+</form>
+{% if profile.skills or profile.employment_history or profile.education or profile.certifications %}
+<section class="panel">
+    <h2>Structured details</h2>
+    <dl>
+        <dt>Skills</dt>
+        <dd>{{ profile.skills|default:"[]" }}</dd>
+        <dt>Employment</dt>
+        <dd>{{ profile.employment_history|default:"[]" }}</dd>
+        <dt>Education</dt>
+        <dd>{{ profile.education|default:"[]" }}</dd>
+        <dt>Certifications</dt>
+        <dd>{{ profile.certifications|default:"[]" }}</dd>
+    </dl>
+</section>
+{% endif %}
+{% endblock %}

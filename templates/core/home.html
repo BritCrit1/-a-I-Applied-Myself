@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}a-I-Applied-Myself{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <h1>Your personal job application agent</h1>
+    <p>Upload a resume, confirm your candidate profile, define search preferences, and prepare for controlled job discovery and application workflows.</p>
+    <a class="button" href="{% url 'signup' %}">Create account</a>
+    <a class="button secondary" href="{% url 'login' %}">Sign in</a>
+</section>
+{% endblock %}

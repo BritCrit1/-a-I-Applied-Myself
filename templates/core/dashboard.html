@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<section class="panel">
+    <h2>Milestone 1 setup</h2>
+    <dl>
+        <dt>Resume</dt>
+        <dd>{% if latest_resume %}{{ latest_resume.original_filename }} ({{ latest_resume.get_status_display }}){% else %}Not uploaded{% endif %}</dd>
+        <dt>Candidate profile</dt>
+        <dd>{% if profile and profile.confirmed_at %}Confirmed{% elif profile %}Needs review{% else %}Not created{% endif %}</dd>
+        <dt>Search profile</dt>
+        <dd>{% if preferences %}Saved{% else %}Not saved{% endif %}</dd>
+    </dl>
+</section>
+<p>
+    <a class="button" href="{% url 'resume_upload' %}">Upload resume</a>
+    <a class="button secondary" href="{% url 'profile_confirm' %}">Confirm profile</a>
+    <a class="button secondary" href="{% url 'search_preferences' %}">Search preferences</a>
+</p>
+{% endblock %}
