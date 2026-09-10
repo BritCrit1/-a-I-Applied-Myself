@@ -1,0 +1,47 @@
+plugins { id 'com.android.application' }
+
+def appUrl = providers.gradleProperty('appUrl').getOrElse('https://example.invalid')
+if (!(appUrl ==~ /https:\/\/[A-Za-z0-9.-]+(:[0-9]+)?/)) {
+    throw new GradleException('appUrl must be an HTTPS origin without a trailing slash')
+}
+android {
+    namespace 'com.britcrit.aiappliedmyself'
+    compileSdk 36
+    defaultConfig {
+        applicationId providers.gradleProperty('applicationId').getOrElse('com.britcrit.aiams')
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '0.1.0'
+        buildConfigField 'String', 'APP_URL', '"' + appUrl + '"'
+    }
+    buildFeatures { buildConfig true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        release {
+            if (System.getenv('ANDROID_KEYSTORE')) {
+                storeFile file(System.getenv('ANDROID_KEYSTORE'))
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes { release { signingConfig signingConfigs.release } }
+}
+tasks.configureEach {
+    if (name == 'preReleaseBuild') {
+        doFirst {
+            if (appUrl == 'https://example.invalid' || !System.getenv('ANDROID_KEYSTORE')) {
+                throw new GradleException('Release requires -PappUrl=https://your-host and ANDROID_KEYSTORE signing variables')
+            }
+        }
+    }
+}
+dependencies {
+    implementation 'com.android.billingclient:billing:8.3.0'
+    implementation 'androidx.activity:activity:1.10.1'
+}

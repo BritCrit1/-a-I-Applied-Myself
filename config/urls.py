@@ -8,6 +8,7 @@ from apps.core import views as core_views
 
 
 urlpatterns = [
+    path("billing/", include("apps.billing.urls")),
     path("", core_views.home, name="home"),
     path("dashboard/", core_views.dashboard, name="dashboard"),
     path(

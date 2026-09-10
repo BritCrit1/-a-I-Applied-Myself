@@ -25,14 +25,17 @@ INSTALLED_APPS = [
     "apps.profiles",
     "apps.jobs",
     "apps.integrations",
+    "apps.billing",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.billing.middleware.SubscriptionMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -78,6 +81,10 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -94,3 +101,36 @@ MANUS_API_BASE_URL = os.getenv("MANUS_API_BASE_URL", "")
 MANUS_API_KEY = os.getenv("MANUS_API_KEY", "")
 GMAIL_CLIENT_ID = os.getenv("GMAIL_CLIENT_ID", "")
 GMAIL_CLIENT_SECRET = os.getenv("GMAIL_CLIENT_SECRET", "")
+
+PLAY_PACKAGE_NAME = os.getenv("PLAY_PACKAGE_NAME", "com.britcrit.aiams")
+PLAY_SUBSCRIPTION_ID = "premium"
+PLAY_BASE_PLAN_ID = "weekly"
+BILLING_REQUIRED = os.getenv("BILLING_REQUIRED", "false").lower() == "true"
+
+# Cloud Run terminates HTTPS and supplies the forwarded protocol header.
+if os.getenv("DEPLOYMENT_ENV") == "production":
+    from django.core.exceptions import ImproperlyConfigured
+    for required in ("DJANGO_SECRET_KEY", "DATABASE_URL", "GS_BUCKET_NAME", "DJANGO_ALLOWED_HOSTS"):
+        if not os.getenv(required):
+            raise ImproperlyConfigured(f"{required} is required in production")
+    if DEBUG or SECRET_KEY in {"development-only-secret-key", "change-me-in-production"}:
+        raise ImproperlyConfigured("Production requires DEBUG=false and a unique secret key")
+    if DATABASES["default"]["ENGINE"] != "django.db.backends.postgresql":
+        raise ImproperlyConfigured("Production requires PostgreSQL")
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": os.environ["GS_BUCKET_NAME"],
+                "default_acl": None,
+                "querystring_auth": True,
+                "iam_sign_blob": True,
+            },
+        },
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }

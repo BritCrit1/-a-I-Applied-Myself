@@ -11,3 +11,8 @@ htmlcov/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+android/.gradle/
+android/**/build/
+android/local.properties
+*.jks
+*.keystore

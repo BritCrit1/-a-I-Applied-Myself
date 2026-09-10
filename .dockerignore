@@ -1,0 +1,12 @@
+.git
+.venv
+.env
+.env.*
+**/__pycache__
+*.sqlite3
+media
+staticfiles
+android
+*.jks
+*.keystore
+**/credentials*.json

@@ -59,3 +59,10 @@ Optional provider configuration:
 - `GMAIL_CLIENT_SECRET`
 
 Never commit API keys, OAuth secrets, Manus credentials, Gmail tokens, or provider credentials.
+# Android and Google Cloud
+
+The Android app is named **AIAMS**. See [Android release setup](docs/ANDROID_RELEASE.md)
+for APK/AAB builds and the USD 4.99 weekly subscription with a seven-day trial.
+See [Google Cloud deployment](docs/GOOGLE_CLOUD.md) for Cloud Run, Cloud SQL,
+private resume storage and HTTPS configuration. Real Play purchases and a public
+release require external account configuration and completed production features.
