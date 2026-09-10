@@ -1,84 +1,22 @@
 <!doctype html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}a-I-Applied-Myself{% endblock %}</title>
-    <style>
-        :root {
-            color-scheme: light;
-            --bg: #f7f7f4;
-            --surface: #ffffff;
-            --text: #1e2528;
-            --muted: #657174;
-            --border: #d9dfdc;
-            --accent: #206c5f;
-            --danger: #9b2c2c;
-        }
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-        }
-        header, main {
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-        }
-        a { color: var(--accent); }
-        nav a, nav form { display: inline-block; margin-left: 16px; }
-        .button, button {
-            background: var(--accent);
-            border: 0;
-            color: #fff;
-            cursor: pointer;
-            display: inline-block;
-            font: inherit;
-            padding: 10px 14px;
-            text-decoration: none;
-        }
-        .secondary { background: #384648; }
-        .panel {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 24px;
-            margin: 20px 0;
-        }
-        label { display: block; font-weight: 700; margin-top: 14px; }
-        input, select, textarea {
-            box-sizing: border-box;
-            font: inherit;
-            margin-top: 6px;
-            max-width: 560px;
-            padding: 10px;
-            width: 100%;
-        }
-        .muted { color: var(--muted); }
-        .errorlist { color: var(--danger); }
-        .messages { padding: 0; }
-        .messages li { list-style: none; margin: 8px 0; }
-        dl { display: grid; grid-template-columns: 180px 1fr; gap: 8px 16px; }
-        dt { color: var(--muted); }
-        dd { margin: 0; }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
-<header>
-    <a href="{% url 'home' %}"><strong>a-I-Applied-Myself</strong></a>
+<body class="{% block body_class %}{% endblock %}">
+<header class="site-header">
+    <a class="brand-link" href="{% url 'home' %}"><strong>(A)I Applied Myself</strong></a>
     <nav>
         {% if user.is_authenticated %}
             <a href="{% url 'dashboard' %}">Dashboard</a>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <button type="submit" class="secondary">Sign out</button>
+                <button type="submit" class="button secondary">Sign out</button>
             </form>
         {% else %}
             <a href="{% url 'login' %}">Sign in</a>
@@ -96,5 +34,6 @@
     {% endif %}
     {% block content %}{% endblock %}
 </main>
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>

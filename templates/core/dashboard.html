@@ -1,23 +1,253 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}(A)I Applied Myself{% endblock %}
+{% block body_class %}notebook-app{% endblock %}
 
 {% block content %}
-<h1>Dashboard</h1>
-<section class="panel">
-    <h2>Milestone 1 setup</h2>
-    <dl>
-        <dt>Resume</dt>
-        <dd>{% if latest_resume %}{{ latest_resume.original_filename }} ({{ latest_resume.get_status_display }}){% else %}Not uploaded{% endif %}</dd>
-        <dt>Candidate profile</dt>
-        <dd>{% if profile and profile.confirmed_at %}Confirmed{% elif profile %}Needs review{% else %}Not created{% endif %}</dd>
-        <dt>Search profile</dt>
-        <dd>{% if preferences %}Saved{% else %}Not saved{% endif %}</dd>
-    </dl>
+<section class="notebook-shell" data-notebook>
+    <div class="notebook-binding" aria-hidden="true">
+        {% for _ in "123456789012" %}
+            <span></span>
+        {% endfor %}
+    </div>
+
+    <div class="notebook-paper">
+        <div class="sheet-stack" aria-live="polite">
+            <article class="notebook-sheet is-active" data-sheet="0" aria-labelledby="sheet-dashboard-title">
+                <div class="sheet-grid dashboard-grid">
+                    <section class="glass-panel hero-panel">
+                        <div class="brand-row">
+                            <div class="ai-mark" aria-hidden="true">AI</div>
+                            <div>
+                                <h1 id="sheet-dashboard-title">(A)I Applied Myself</h1>
+                                <p>Your AI job hunt. Let the robot do the boring shit.</p>
+                            </div>
+                        </div>
+                        <div class="agent-status">
+                            <span>Agent Status</span>
+                            <strong>{% if agent_tasks %}Working{% elif profile and preferences %}Sleeping{% else %}Needs You{% endif %}</strong>
+                        </div>
+                        <div class="action-row">
+                            <a class="button neon" href="{% url 'search_preferences' %}">Start Search</a>
+                            <button class="button ghost" type="button" data-go-sheet="5">View Activity</button>
+                        </div>
+                    </section>
+
+                    <section class="metric-grid" aria-label="Job hunt summary">
+                        <div class="glass-card metric-card"><span>Jobs Found</span><strong>{{ counts.jobs_found|default:0 }}</strong></div>
+                        <div class="glass-card metric-card"><span>Strong Matches</span><strong>{{ counts.strong_matches|default:0 }}</strong></div>
+                        <div class="glass-card metric-card"><span>Applications Sent</span><strong>{{ counts.applications_sent|default:0 }}</strong></div>
+                        <div class="glass-card metric-card"><span>Interviews</span><strong>{{ counts.interviews|default:0 }}</strong></div>
+                        <div class="glass-card metric-card"><span>Follow-Ups Due</span><strong>{{ counts.followups_due|default:0 }}</strong></div>
+                    </section>
+
+                    <nav class="hub-map glass-panel" aria-label="Notebook sheets">
+                        <button type="button" data-go-sheet="1">Resume / Profile</button>
+                        <button type="button" data-go-sheet="2">Search Preferences</button>
+                        <button type="button" data-go-sheet="3">Job Matches</button>
+                        <button type="button" data-go-sheet="4">Applications</button>
+                        <button type="button" data-go-sheet="5">Agent Activity</button>
+                        <button type="button" data-go-sheet="6">Messages</button>
+                        <button type="button" data-go-sheet="7">Follow-Ups</button>
+                        <button type="button" data-go-sheet="8">Settings</button>
+                    </nav>
+                </div>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="1" aria-hidden="true" inert aria-labelledby="sheet-profile-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-profile-title">My Resume / Candidate Profile</h2>
+                    <p class="sheet-copy">Your resume has entered the chat. Confirm only what is true.</p>
+                    <dl class="profile-list">
+                        <dt>Uploaded resume</dt>
+                        <dd>{% if latest_resume %}{{ latest_resume.original_filename }}{% else %}No resume uploaded{% endif %}</dd>
+                        <dt>Name</dt>
+                        <dd>{{ profile.full_name|default:"Not confirmed" }}</dd>
+                        <dt>Email</dt>
+                        <dd>{{ profile.email|default:user.email|default:"Not confirmed" }}</dd>
+                        <dt>Phone</dt>
+                        <dd>{{ profile.phone|default:"Not confirmed" }}</dd>
+                        <dt>Location</dt>
+                        <dd>{{ profile.location|default:"Not confirmed" }}</dd>
+                        <dt>Skills</dt>
+                        <dd>{{ profile.skills|default:"No skills extracted yet" }}</dd>
+                        <dt>Experience</dt>
+                        <dd>{{ profile.employment_history|default:"No experience extracted yet" }}</dd>
+                        <dt>Education</dt>
+                        <dd>{{ profile.education|default:"No education extracted yet" }}</dd>
+                        <dt>Certifications</dt>
+                        <dd>{{ profile.certifications|default:"No certifications extracted yet" }}</dd>
+                    </dl>
+                    <div class="action-row">
+                        <a class="button neon" href="{% url 'profile_confirm' %}">Edit Profile</a>
+                        <a class="button ghost" href="{% url 'resume_upload' %}">Replace Resume</a>
+                    </div>
+                </section>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="2" aria-hidden="true" inert aria-labelledby="sheet-search-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-search-title">What Am I Looking For?</h2>
+                    <div class="option-row">
+                        <span class="{% if preferences.search_intent == 'strong_match' %}is-selected{% endif %}">Match My Current Skills</span>
+                        <span class="{% if preferences.search_intent == 'lateral_shift' %}is-selected{% endif %}">Lateral Career Shift</span>
+                        <span class="{% if preferences.search_intent == 'entry_level_shift' %}is-selected{% endif %}">Entry-Level Career Change</span>
+                    </div>
+                    <dl class="profile-list compact">
+                        <dt>ZIP code</dt>
+                        <dd>{{ preferences.zip_code|default:"Not set" }}</dd>
+                        <dt>Radius</dt>
+                        <dd>{% if preferences %}{{ preferences.search_radius_miles }} miles{% else %}Not set{% endif %}</dd>
+                        <dt>Work mode</dt>
+                        <dd>{{ preferences.get_work_mode_display|default:"Remote / Hybrid / On-site not set" }}</dd>
+                        <dt>Priority</dt>
+                        <dd>{{ preferences.get_priority_display|default:"Not set" }}</dd>
+                        <dt>Minimum salary</dt>
+                        <dd>{% if preferences.minimum_salary %}${{ preferences.minimum_salary }}{% else %}Not set{% endif %}</dd>
+                    </dl>
+                    <a class="button neon" href="{% url 'search_preferences' %}">Edit Search Profile</a>
+                </section>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="3" aria-hidden="true" inert aria-labelledby="sheet-jobs-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-jobs-title">Job Matches</h2>
+                    <div class="card-list">
+                        {% for job in jobs %}
+                            <article class="glass-card job-card">
+                                <div>
+                                    <h3>{{ job.title }}</h3>
+                                    <p>{{ job.company }} · {{ job.location|default:"Location unknown" }} · {{ job.get_work_mode_display }}</p>
+                                    <p>{% if job.salary_is_employer_listed %}Listed Salary{% else %}Estimated Salary{% endif %}: {% if job.salary_min and job.salary_max %}${{ job.salary_min }} - ${{ job.salary_max }}{% else %}Unavailable{% endif %}</p>
+                                    <p class="sheet-copy">{{ job.match_reasoning|default:"Waiting for match scoring." }}</p>
+                                </div>
+                                <strong class="match-score">{{ job.match_score|default:0 }}%</strong>
+                                <div class="mini-actions">
+                                    <a href="{{ job.source_url|default:'#' }}">View</a>
+                                    <button type="button">Apply</button>
+                                    <button type="button">Skip</button>
+                                </div>
+                            </article>
+                        {% empty %}
+                            <p class="empty-state">Nothing new yet. The employment gods remain difficult.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="4" aria-hidden="true" inert aria-labelledby="sheet-applications-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-applications-title">Applications</h2>
+                    <div class="filter-row" role="list" aria-label="Application status filters">
+                        <button type="button">Preparing</button>
+                        <button type="button">Needs You</button>
+                        <button type="button">Applied</button>
+                        <button type="button">Awaiting Response</button>
+                        <button type="button">Interview</button>
+                        <button type="button">Follow-Up Due</button>
+                        <button type="button">Rejected</button>
+                        <button type="button">Closed</button>
+                    </div>
+                    <div class="card-list">
+                        {% for application in applications %}
+                            <article class="glass-card application-card">
+                                <strong>{{ application.job.title }}</strong>
+                                <span>{{ application.job.company }}</span>
+                                <em>{{ application.get_state_display }}</em>
+                            </article>
+                        {% empty %}
+                            <p class="empty-state">No applications yet. The robot is still waiting for marching orders.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="5" aria-hidden="true" inert aria-labelledby="sheet-activity-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-activity-title">Agent Activity</h2>
+                    <ol class="activity-feed">
+                        {% for task in agent_tasks %}
+                            <li>
+                                <strong>{{ task.get_task_type_display }}</strong>
+                                <span>{{ task.get_status_display }}{% if task.failure_reason %}: {{ task.failure_reason }}{% endif %}</span>
+                            </li>
+                        {% empty %}
+                            <li><strong>Sleeping</strong><span>No agent activity yet.</span></li>
+                            <li><strong>Ready</strong><span>Human required. The robot refuses to lie for you.</span></li>
+                        {% endfor %}
+                    </ol>
+                </section>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="6" aria-hidden="true" inert aria-labelledby="sheet-messages-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-messages-title">Messages / Correspondence</h2>
+                    <div class="card-list">
+                        {% for message in communications %}
+                            <article class="glass-card application-card">
+                                <strong>{{ message.subject|default:"No subject" }}</strong>
+                                <span>{{ message.sender|default:"Unknown sender" }}</span>
+                                <em>{{ message.get_classification_display }}</em>
+                            </article>
+                        {% empty %}
+                            <p class="empty-state">Gmail is not connected yet. No recruiter messages have been imported.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="7" aria-hidden="true" inert aria-labelledby="sheet-followups-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-followups-title">Follow-Ups</h2>
+                    <div class="card-list">
+                        {% for followup in followups %}
+                            <article class="glass-card followup-card">
+                                <strong>{{ followup.application.job.company }}</strong>
+                                <span>{{ followup.application.job.title }}</span>
+                                <span>Due {{ followup.due_at }}</span>
+                                <p>{{ followup.draft_body|default:"No draft yet." }}</p>
+                                <div class="mini-actions">
+                                    <button type="button">Review</button>
+                                    <button type="button">Send</button>
+                                </div>
+                            </article>
+                        {% empty %}
+                            <p class="empty-state">No follow-ups due. Enjoy the silence while it lasts.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            </article>
+
+            <article class="notebook-sheet" data-sheet="8" aria-hidden="true" inert aria-labelledby="sheet-settings-title">
+                <section class="glass-panel sheet-panel">
+                    <h2 id="sheet-settings-title">Automation Settings</h2>
+                    <dl class="profile-list compact">
+                        <dt>Run Mode</dt>
+                        <dd>{{ run_setting.get_run_mode_display|default:"Manual" }}</dd>
+                        <dt>Frequency</dt>
+                        <dd>{{ run_setting.cadence|default:"Not scheduled" }}</dd>
+                        <dt>Max applications/run</dt>
+                        <dd>{{ run_setting.max_applications_per_run|default:5 }}</dd>
+                        <dt>Minimum match score</dt>
+                        <dd>{{ run_setting.min_match_score|default:70 }}%</dd>
+                        <dt>Auto-submit</dt>
+                        <dd>{% if run_setting.auto_submit %}Enabled{% else %}Disabled{% endif %}</dd>
+                    </dl>
+                </section>
+            </article>
+        </div>
+    </div>
+
+    <div class="notebook-nav" aria-label="Sheet navigation">
+        <button type="button" data-prev-sheet>‹ <span data-prev-label>Resume</span></button>
+        <div class="sheet-dots" data-sheet-dots></div>
+        <button type="button" data-next-sheet><span data-next-label>Search</span> ›</button>
+        <button type="button" data-go-home>Home</button>
+    </div>
 </section>
-<p>
-    <a class="button" href="{% url 'resume_upload' %}">Upload resume</a>
-    <a class="button secondary" href="{% url 'profile_confirm' %}">Confirm profile</a>
-    <a class="button secondary" href="{% url 'search_preferences' %}">Search preferences</a>
-</p>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/notebook.js' %}" defer></script>
 {% endblock %}
